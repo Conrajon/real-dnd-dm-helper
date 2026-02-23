@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+installer/
+out/
+dist/
+*.exe
+
+# Ollama installer (large binary); keep ollama/ folder and README
+ollama/*.exe
+ollama/OllamaSetup.exe
+ollama/ollamasetup.exe
+
+# Build script backup (if left behind)
+package.json.build-bak
+
+# Logs and env
+*.log
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

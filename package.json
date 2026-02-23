@@ -1,0 +1,72 @@
+{
+  "name": "real-dnd-dm-helper",
+  "version": "1.0.0",
+  "description": "Professional D&D 5e DM desktop app: NPCs, quests, encounters, battle maps, party tracking, Live DM tools, and local AI (Ollama). Production-ready.",
+  "main": "main.js",
+  "author": "DND DM Helper",
+  "license": "MIT",
+  "scripts": {
+    "start": "set ELECTRON_RUN_AS_NODE=&& electron .",
+    "test:regression": "node scripts/regression-smoke.js",
+    "download-ollama": "node scripts/download-ollama.js",
+    "ensure-html-source": "node scripts/ensure-html-source.js",
+    "cleanup-installer-duplicates": "node scripts/cleanup-installer-duplicates.js",
+    "predist": "node scripts/download-ollama.js && node scripts/ensure-html-source.js",
+    "dist": "npm run download-ollama && npm run ensure-html-source && electron-builder --win --publish never",
+    "release": "npm run download-ollama && npm run ensure-html-source && electron-builder --win --publish always",
+    "dist-portable": "electron-builder --win portable",
+    "dist-nsis": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
+  },
+  "build": {
+    "appId": "com.dnd.dmhelper.real",
+    "productName": "Real DND DM Helper",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "srd-spells.js"
+    ],
+    "directories": {
+      "output": "installer"
+    },
+    "extraResources": [
+      {
+        "from": "ollama",
+        "to": "ollama"
+      }
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "Conrajon",
+      "repo": "real-dnd-dm-helper"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "Real-DND-DM-Helper-Setup-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "Real DND DM Helper",
+      "menuCategory": "Real DND DM Helper",
+      "installerLanguages": ["en-US"]
+    }
+  }
+}

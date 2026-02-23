@@ -1,0 +1,43 @@
+Real DND DM Helper — Folder contents (quick reference)
+========================================================
+
+Root
+----
+index.html          Main app UI (all layout, styles, and logic). Edit this to change the app.
+main.js             Electron main process (window, app:// protocol, Ollama, updates).
+preload.js          Context bridge; exposes desktopApp to renderer.
+srd-spells.js       D&D SRD spell data; sets window.__SRD_SPELLS__. Required.
+package.json        Project config, npm scripts, electron-builder config.
+package-lock.json   Locked dependency versions.
+BUILD-EXE.bat       Build installer (npm install + download-ollama + ensure-html-source + electron-builder).
+Close-Real-DND-DM-Helper.bat   Kill running app/installer so you can rebuild or install.
+README.md           Quick start, build, features, layout.
+EXE-READINESS-CHECKLIST.md   Prerequisites, smoke test, build, release verification.
+UPDATES.md          How in-app updater works; hosting latest.yml and exe.
+START HERE.txt      End-user install/run and AI setup.
+FOLDER-CONTENTS.txt This file.
+.gitignore          Ignores node_modules, installer/, ollama exes, etc.
+
+scripts/
+--------
+download-ollama.js       Download Ollama Windows installer to ollama/ (or use existing).
+ensure-html-source.js    Ensure index.html and srd-spells.js exist; clean installer/ for fresh build.
+regression-smoke.js      Smoke tests (homebrew, migrations, undo, dm_vault, desktop bridge, index.html).
+cleanup-installer-duplicates.js   Keep only Real-DND-DM-Helper-Setup-{version}.exe.
+
+build/
+------
+installer.nsh   Custom NSIS: CRCCheck off; no sub-installer.
+
+ollama/
+--------
+README.txt   Placeholder when Ollama exe isn't bundled. Optional: put OllamaSetup.exe here to bundle.
+
+update/
+--------
+README.md    How to get changes into the installed app; hosting for in-app updates.
+.gitignore   Ignores *.exe, *.yml in this folder.
+
+installer/   (created by build)
+--------------
+Build output: Real-DND-DM-Helper-Setup-1.0.0.exe, latest.yml, win-unpacked/. Wiped by ensure-html-source.js before each full build.

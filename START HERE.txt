@@ -1,0 +1,31 @@
+Real DND DM Helper — Start Here
+================================
+
+INSTALL & RUN
+-------------
+1. Double-click "Real-DND-DM-Helper-Setup-1.0.0.exe" to install (after building; see BUILD below).
+2. Launch "Real DND DM Helper" from the Start Menu or desktop shortcut.
+   Do NOT open index.html in a browser if you want AI and full features — use the installed app.
+
+BUILD THE INSTALLER (developers)
+---------------------------------
+1. Open a terminal in this folder.
+2. Run: BUILD-EXE.bat
+   Or: npm install, then npm run dist
+3. The installer will appear as Real-DND-DM-Helper-Setup-1.0.0.exe in this folder and in installer/.
+
+AI (Ollama)
+-----------
+- The app uses local AI (Ollama) for DM Helper AI chat and story generation.
+- First run: Options → AI. Install Ollama if needed, then "Pull model" (e.g. llama2). Test connection.
+- If you built with Ollama bundled, the installer can run the Ollama installer after installing the app.
+- The app will try to start Ollama automatically when you open it.
+
+TROUBLESHOOTING
+---------------
+- "Setup files are corrupt": Install to a short path (e.g. C:\RealDMHelper\). Disable CRC in build (already set in build/installer.nsh).
+- AI not working: Ensure Ollama is installed and running (ollama serve). Pull a model: ollama pull llama2.
+- App won't start: Close any running instance (run Close-Real-DND-DM-Helper.bat), then try again.
+- After editing index.html or any source: run BUILD-EXE.bat again and reinstall (or use in-app update if configured).
+
+For full project layout and release steps, see README.md and EXE-READINESS-CHECKLIST.md.

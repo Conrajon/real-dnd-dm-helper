@@ -1,0 +1,4 @@
+# Built update artifacts (host these for in-app updates)
+*.exe
+*.yml
+*.yaml
