@@ -15,7 +15,10 @@
     "dist": "npm run download-ollama && npm run ensure-html-source && electron-builder --win --publish never",
     "release": "npm run download-ollama && npm run ensure-html-source && electron-builder --win --publish always",
     "dist-portable": "electron-builder --win portable",
-    "dist-nsis": "electron-builder --win nsis"
+    "dist-nsis": "electron-builder --win nsis",
+    "publish": "node scripts/publish.js",
+    "publish:minor": "node scripts/publish.js minor",
+    "publish:major": "node scripts/publish.js major"
   },
   "devDependencies": {
     "electron": "^31.0.2",
