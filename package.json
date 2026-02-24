@@ -1,6 +1,6 @@
 {
   "name": "real-dnd-dm-helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional D&D 5e DM desktop app: NPCs, quests, encounters, battle maps, party tracking, Live DM tools, and local AI (Ollama). Production-ready.",
   "main": "main.js",
   "author": "DND DM Helper",
@@ -55,7 +55,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -69,7 +71,9 @@
       "runAfterFinish": true,
       "shortcutName": "Real DND DM Helper",
       "menuCategory": "Real DND DM Helper",
-      "installerLanguages": ["en-US"]
+      "installerLanguages": [
+        "en-US"
+      ]
     }
   }
 }
