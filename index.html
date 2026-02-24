@@ -11738,14 +11738,16 @@ function dmBootApplication() {
     dmStartLongSessionPerformancePass();
     window.addEventListener('app:update-available', function(e) {
         var v = (e.detail && e.detail.version) ? e.detail.version : '';
-        if (typeof showToast === 'function') showToast('Update available (v' + v + '). Go to Options → About to download and install.', 'success');
+        if (typeof showInGameUpdateBanner === 'function' && v) showInGameUpdateBanner(v);
     });
     window.addEventListener('app:update-download-progress', function(e) {
         var d = e.detail || {};
         if (typeof optionsUpdateUI_onDownloadProgress === 'function') optionsUpdateUI_onDownloadProgress(d.percent, d.bytesPerSecond, d.transferred, d.total);
+        if (typeof igOnDownloadProgress === 'function') igOnDownloadProgress(d.percent, d.bytesPerSecond);
     });
     window.addEventListener('app:update-downloaded', function() {
         if (typeof optionsUpdateUI_onDownloaded === 'function') optionsUpdateUI_onDownloaded();
+        if (typeof igOnDownloaded === 'function') igOnDownloaded();
     });
     window.addEventListener('app:update-error', function(e) {
         var msg = (e.detail && e.detail.message) ? e.detail.message : '';
@@ -34886,11 +34888,119 @@ window.dmHelpFilter = function() {
     </div>
 </div>
 
+<!-- ══ IN-GAME UPDATE BANNER ══ -->
+<div id="inGameUpdateBanner" style="display:none;position:fixed;top:38px;right:16px;z-index:25000;width:360px;max-width:90vw;background:linear-gradient(145deg,#0d1a2e,#122240);border:2px solid rgba(46,204,113,0.6);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.7),0 0 20px rgba(46,204,113,0.1);overflow:hidden;animation:igUpdateSlideIn 0.4s ease-out;">
+    <style>
+        @keyframes igUpdateSlideIn { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes igUpdatePulse { 0%,100% { box-shadow:0 0 8px rgba(46,204,113,0.3); } 50% { box-shadow:0 0 16px rgba(46,204,113,0.6); } }
+    </style>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(135deg,rgba(46,204,113,0.2),rgba(46,120,200,0.15));border-bottom:1px solid rgba(46,204,113,0.3);">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1.2em;">⚔</span>
+            <span style="font-family:'Cinzel',serif;font-size:0.82em;font-weight:700;color:#a0e8a0;letter-spacing:1px;text-transform:uppercase;">Update Available</span>
+        </div>
+        <button onclick="dismissInGameUpdate()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.1em;padding:2px 6px;line-height:1;" title="Dismiss">✕</button>
+    </div>
+    <div style="padding:12px 14px;">
+        <div id="igUpdateInfo" style="font-family:'Crimson Text',serif;font-size:0.9em;color:rgba(255,255,255,0.85);margin-bottom:10px;line-height:1.4;"></div>
+        <div id="igUpdateActions" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" id="igDownloadBtn" onclick="igStartDownload()" style="flex:1;padding:8px 14px;background:linear-gradient(145deg,rgba(46,120,200,0.4),rgba(46,80,180,0.5));border:1px solid rgba(100,160,255,0.5);color:#a0c8ff;border-radius:8px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.78em;font-weight:700;letter-spacing:0.5px;animation:igUpdatePulse 2s infinite;">Download Now</button>
+            <button type="button" id="igLaterBtn" onclick="dismissInGameUpdate()" style="padding:8px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.55);border-radius:8px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.78em;font-weight:700;">Later</button>
+        </div>
+        <div id="igUpdateProgress" style="display:none;margin-top:10px;">
+            <div style="height:6px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;">
+                <div id="igProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#2e8b57,#3cb371);border-radius:3px;transition:width 0.3s;"></div>
+            </div>
+            <div id="igProgressText" style="font-family:'Crimson Text',serif;font-size:0.78em;color:rgba(255,255,255,0.55);margin-top:4px;"></div>
+        </div>
+        <div id="igRestartWrap" style="display:none;margin-top:10px;">
+            <button type="button" onclick="igRestartInstall()" style="width:100%;padding:10px 14px;background:linear-gradient(145deg,rgba(46,204,113,0.35),rgba(46,180,100,0.45));border:1px solid rgba(80,220,120,0.6);color:#b8ffc0;border-radius:8px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.82em;font-weight:700;letter-spacing:0.5px;animation:igUpdatePulse 2s infinite;">⚡ Restart & Install</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   IN-GAME UPDATE BANNER — Logic
+   ═══════════════════════════════════════ */
+var _igUpdateVersion = '';
+
+function showInGameUpdateBanner(version) {
+    _igUpdateVersion = version || '';
+    var banner = document.getElementById('inGameUpdateBanner');
+    var info = document.getElementById('igUpdateInfo');
+    var actions = document.getElementById('igUpdateActions');
+    var progress = document.getElementById('igUpdateProgress');
+    var restartWrap = document.getElementById('igRestartWrap');
+    if (!banner) return;
+    if (info) info.innerHTML = 'Version <strong style="color:#80e080;">' + version + '</strong> is ready. Download and install without leaving the app.';
+    if (actions) actions.style.display = 'flex';
+    if (progress) progress.style.display = 'none';
+    if (restartWrap) restartWrap.style.display = 'none';
+    var dlBtn = document.getElementById('igDownloadBtn');
+    if (dlBtn) { dlBtn.disabled = false; dlBtn.style.animation = 'igUpdatePulse 2s infinite'; }
+    banner.style.display = 'block';
+}
+
+function dismissInGameUpdate() {
+    var banner = document.getElementById('inGameUpdateBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function igStartDownload() {
+    if (!window.desktopApp || typeof window.desktopApp.downloadUpdate !== 'function') return;
+    var dlBtn = document.getElementById('igDownloadBtn');
+    var laterBtn = document.getElementById('igLaterBtn');
+    var progress = document.getElementById('igUpdateProgress');
+    var bar = document.getElementById('igProgressBar');
+    var text = document.getElementById('igProgressText');
+    if (dlBtn) { dlBtn.disabled = true; dlBtn.textContent = 'Downloading…'; dlBtn.style.animation = 'none'; }
+    if (laterBtn) laterBtn.style.display = 'none';
+    if (progress) progress.style.display = 'block';
+    if (bar) bar.style.width = '0%';
+    if (text) text.textContent = 'Starting download…';
+    window.desktopApp.downloadUpdate();
+}
+
+function igOnDownloadProgress(percent, bytesPerSecond) {
+    var bar = document.getElementById('igProgressBar');
+    var text = document.getElementById('igProgressText');
+    var pct = Math.min(100, Math.round(percent || 0));
+    if (bar) bar.style.width = pct + '%';
+    if (text) {
+        var speed = bytesPerSecond > 0 ? (bytesPerSecond / 1024 / 1024).toFixed(1) + ' MB/s' : '';
+        text.textContent = 'Downloading… ' + pct + '%' + (speed ? ' · ' + speed : '');
+    }
+}
+
+function igOnDownloaded() {
+    var actions = document.getElementById('igUpdateActions');
+    var progress = document.getElementById('igUpdateProgress');
+    var bar = document.getElementById('igProgressBar');
+    var text = document.getElementById('igProgressText');
+    var restartWrap = document.getElementById('igRestartWrap');
+    if (actions) actions.style.display = 'none';
+    if (bar) bar.style.width = '100%';
+    if (text) text.textContent = 'Download complete!';
+    if (restartWrap) restartWrap.style.display = 'block';
+}
+
+function igRestartInstall() {
+    if (window.desktopApp && typeof window.desktopApp.quitAndInstall === 'function') {
+        window.desktopApp.quitAndInstall();
+    }
+}
+</script>
+
 <script>
 /* ═══════════════════════════════════════
    WHAT'S NEW — Changelog & Version Check
    ═══════════════════════════════════════ */
 var APP_CHANGELOG = {
+    "1.0.2": [
+        "Fixed update system - releases now publish correctly",
+        "Added in-game update banner"
+    ],
     "1.0.1": [
         "Bug fixes and improvements"
     ],

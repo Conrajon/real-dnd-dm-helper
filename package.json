@@ -1,6 +1,6 @@
 {
   "name": "real-dnd-dm-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Professional D&D 5e DM desktop app: NPCs, quests, encounters, battle maps, party tracking, Live DM tools, and local AI (Ollama). Production-ready.",
   "main": "main.js",
   "author": "DND DM Helper",
@@ -48,7 +48,8 @@
     "publish": {
       "provider": "github",
       "owner": "Conrajon",
-      "repo": "real-dnd-dm-helper"
+      "repo": "real-dnd-dm-helper",
+      "releaseType": "release"
     },
     "win": {
       "signAndEditExecutable": false,
